@@ -2,16 +2,9 @@
 # include <Siv3D.hpp> // OpenSiv3D v0.2.8
 
 
-enum class State
-{
-	Opening,
-	Game,
-	Result,
-};
-
 struct CommonData
 {
-	Optional<State>  scene;
+	Optional<String>  scene;
 	Font font{ 50 };
 	int32 score = 0;
 };
@@ -45,7 +38,7 @@ public:
 	{
 		if (MouseL.down())
 		{
-			common.scene = State::Game;
+			common.scene.emplace(U"Game");
 		}
 	}
 
@@ -74,11 +67,11 @@ public:
 	{
 		if (MouseR.down())
 		{
-			common.scene = State::Opening;
+			common.scene.emplace(U"Opening");
 		}
 		if (MouseL.down())
 		{
-			common.scene = State::Result;
+			common.scene.emplace(U"Result");
 		}
 
 		if (KeySpace.down())
@@ -91,6 +84,10 @@ public:
 	{
 		Rect(Window::Size()).draw(Palette::Skyblue);
 		Rect(Size(0, 400), Size(Window::Size().x, 300)).draw(Palette::Gray);
+
+
+		common.font(U"score: ", common.score).drawAt(Window::Center() + Vec2(0.0, -200), Palette::Black);
+
 	}
 private:
 };
@@ -125,16 +122,17 @@ void Main()
 	CommonData common;
 	
 	std::unique_ptr<SceneBase> scene = std::make_unique<Opening>();
-	Array<std::function<std::unique_ptr<SceneBase>()>> factories;
-	factories.push_back([&]() {return std::make_unique<Opening>(); });
-	factories.push_back([&]() {return std::make_unique<Game>(); });
-	factories.push_back([&](){return std::make_unique<Result>();});
+
+	HashTable<String, std::function<std::unique_ptr<SceneBase>()>> factories;
+	factories[U"Opening"] =  ([&]() {return std::make_unique<Opening>(); }) ;
+	factories[U"Game"] = ([&]() {return std::make_unique<Game>(); });
+	factories[ U"Result" ] = ([&]() {return std::make_unique<Result>(); });
 
 	while (System::Update())
 	{
 		if(common.scene.has_value())
 		{
-			scene = factories[static_cast<size_t>(common.scene.value())]();
+			scene = factories[ common.scene.value() ]();
 			common.scene.reset();
 			Print << U"kirikawari ";
 		}
