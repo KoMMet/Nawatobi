@@ -1,22 +1,77 @@
 ﻿
 # include <Siv3D.hpp> // OpenSiv3D v0.2.8
 
+
+enum class State
+{
+	Opening,
+	Game,
+	Result,
+};
+
+struct CommonData
+{
+	State scene = State::Opening;
+	Font font {50};
+	int32 score=0;
+};
+
+void Opening(CommonData& common)
+{
+	common.font(U"なわとびげええええむ").drawAt(Window::Center());
+
+
+	if (MouseL.down())
+	{
+		common.scene = State::Game;
+	}
+}
+
+void Game(CommonData& common)
+{
+	Rect(Window::Size()).draw(Palette::Skyblue);
+	Rect(Size(0, 400), Size(Window::Size().x, 300)).draw(Palette::Gray);
+	if (MouseR.down())
+	{
+		common.scene = State::Opening;
+	}
+	if(MouseL.down())
+	{
+		common.scene = State::Result;
+	}
+
+	if(KeySpace.down())
+	{
+		++common.score;
+	}
+}
+
+void Result(CommonData& common)
+{
+	common.font(U"スコアは", common.score, U"").drawAt(Window::Center());
+}
+
 void Main()
 {
-	Graphics::SetBackground(ColorF(0.8, 0.9, 1.0));
 
-	const Font font(50);
-
-	const Texture textureCat(Emoji(U"🐈"), TextureDesc::Mipped);
+	CommonData common;
 
 	while (System::Update())
 	{
-		font(U"Hello, Siv3D!🐣").drawAt(Window::Center(), Palette::Black);
-
-		font(Cursor::Pos()).draw(20, 400, ColorF(0.6));
-
-		textureCat.resized(80).draw(540, 380);
-
-		Circle(Cursor::Pos(), 60).draw(ColorF(1, 0, 0, 0.5));
+		switch (common.scene)
+		{
+		case State::Opening:
+		{
+			Opening(common);
+			break;
+		}
+		case State::Game:
+			Game(common);
+			break;
+		case State::Result:
+			Result(common);
+			break;
+		default: ;
+		}
 	}
 }
