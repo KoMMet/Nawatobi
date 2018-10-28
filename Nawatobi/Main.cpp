@@ -11,7 +11,7 @@ enum class State
 
 struct CommonData
 {
-	State scene = State::Opening;
+	Optional<State>  scene;
 	Font font{ 50 };
 	int32 score = 0;
 };
@@ -128,12 +128,17 @@ void Main()
 
 	while (System::Update())
 	{
-		switch (common.scene) 
+		if(common.scene.has_value())
 		{
-		case State::Opening: scene = std::make_unique<Opening>(); break;
-		case State::Game:    scene = std::make_unique<Game>(); break;
-		case State::Result:  scene = std::make_unique<Result>(); break;
-		default: ;
+			switch (common.scene.value())
+			{
+			case State::Opening: scene = std::make_unique<Opening>(); break;
+			case State::Game:    scene = std::make_unique<Game>(); break;
+			case State::Result:  scene = std::make_unique<Result>(); break;
+			default:;
+			}
+			common.scene.reset();
+			Print << U"kirikawari ";
 		}
 		scene->update(common);
 		scene->draw(common);
