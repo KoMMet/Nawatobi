@@ -125,18 +125,16 @@ void Main()
 	CommonData common;
 	
 	std::unique_ptr<SceneBase> scene = std::make_unique<Opening>();
+	Array<std::function<std::unique_ptr<SceneBase>()>> factories;
+	factories.push_back([&]() {return std::make_unique<Opening>(); });
+	factories.push_back([&]() {return std::make_unique<Game>(); });
+	factories.push_back([&](){return std::make_unique<Result>();});
 
 	while (System::Update())
 	{
 		if(common.scene.has_value())
 		{
-			switch (common.scene.value())
-			{
-			case State::Opening: scene = std::make_unique<Opening>(); break;
-			case State::Game:    scene = std::make_unique<Game>(); break;
-			case State::Result:  scene = std::make_unique<Result>(); break;
-			default:;
-			}
+			scene = factories[static_cast<size_t>(common.scene.value())]();
 			common.scene.reset();
 			Print << U"kirikawari ";
 		}
