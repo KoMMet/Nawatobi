@@ -9,51 +9,133 @@ enum class State
 	Result,
 };
 
-void Main()
+struct CommonData
 {
-
 	State scene = State::Opening;
 	Font font{ 50 };
 	int32 score = 0;
+};
 
-	const auto Opening = [&]()
+class SceneBase
+{
+public:
+	SceneBase() {  }
+	virtual  ~SceneBase()
 	{
-		font(U"なわとびげええええむ").drawAt(Window::Center());
+		
+	}
 
+	virtual void update(CommonData& common) = 0;
+	virtual void draw(const CommonData& common) const = 0;
+};
 
+class Opening:public SceneBase
+{
+public:
+	Opening()
+	{
+		
+	}
+	~Opening()
+	{
+		
+	}
+
+	void update(CommonData& common) override
+	{
 		if (MouseL.down())
 		{
-			scene = State::Game;
+			common.scene = State::Game;
 		}
-	};
+	}
 
-	const auto Game = [&]()
+	void draw(const CommonData& common) const override
 	{
-		Rect(Window::Size()).draw(Palette::Skyblue);
-		Rect(Size(0, 400), Size(Window::Size().x, 300)).draw(Palette::Gray);
+		common.font(U"なわとびげええええむ").drawAt(Window::Center());
+	}
+private:
+
+};
+
+class Game: public SceneBase
+{
+public:
+
+	Game()
+	{
+		
+	}
+	~Game()
+	{
+
+	}
+
+	void update(CommonData& common) override
+	{
 		if (MouseR.down())
 		{
-			scene = State::Opening;
+			common.scene = State::Opening;
 		}
 		if (MouseL.down())
 		{
-			scene = State::Result;
+			common.scene = State::Result;
 		}
 
 		if (KeySpace.down())
 		{
-			++score;
+			++common.score;
 		}
-	};
-	const auto Result=[&]()
-	{
-		font(U"スコアは", score, U"").drawAt(Window::Center());
-	};
+	}
 
-	Array<std::function<void()>> functions{Opening, Game, Result};
+	void draw(const CommonData& common) const override
+	{
+		Rect(Window::Size()).draw(Palette::Skyblue);
+		Rect(Size(0, 400), Size(Window::Size().x, 300)).draw(Palette::Gray);
+	}
+private:
+};
+
+class Result:public SceneBase
+{
+public:
+	Result()
+	{
+		
+	}
+
+	~Result()
+	{
+		
+	}
+
+	void update(CommonData& common) override
+	{
+		
+	}
+
+	void draw(const CommonData& common) const override
+	{
+		common.font(U"スコアは", common.score, U"").drawAt(Window::Center());
+	}
+private:
+};
+
+void Main()
+{
+	CommonData common;
+	
+	std::unique_ptr<SceneBase> scene = std::make_unique<Opening>();
 
 	while (System::Update())
 	{
-		functions[static_cast<size_t>(scene)]();
+		switch (common.scene) 
+		{
+		case State::Opening: scene = std::make_unique<Opening>(); break;
+		case State::Game:    scene = std::make_unique<Game>(); break;
+		case State::Result:  scene = std::make_unique<Result>(); break;
+		default: ;
+		}
+		scene->update(common);
+		scene->draw(common);
 	}
 }
