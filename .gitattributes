@@ -62,5 +62,5 @@
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
 
-Intermediate/*
-Nawatobi/App/*
+Intermediate/* linguist-vendored
+Nawatobi/App/* linguist-vendored
